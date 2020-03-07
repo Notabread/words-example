@@ -1,0 +1,20 @@
+[
+  {
+    "type": "word",
+    "question": "orange"
+  },
+  {
+    "type": "phrase",
+    "question": "I have a cat"
+  },
+  {
+    "type": "translate",
+    "question": "cat",
+    "answer": "кот"
+  },
+  {
+    "type": "translate",
+    "question": "яблоко",
+    "answer": "apple"
+  }
+]
