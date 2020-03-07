@@ -16,7 +16,7 @@ export default class Service {
         }
         return null;
     }
-    
+
     saveTestState(data) {
         localStorage.setItem(this._storageKey, JSON.stringify(data));
     }
