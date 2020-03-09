@@ -30,6 +30,7 @@ export default class Test {
             }
         });
         this._current = 0;
+        this._boot();
     }
 
     get task() {
@@ -39,5 +40,58 @@ export default class Test {
         return null;
     }
 
+    _boot() {
+
+        const qCount = this._tasks.length;
+        let current = this._current + 1;
+        const counterBlock = document.querySelector("#total_questions");
+        const currentBlock = document.querySelector("#current_question");
+        currentBlock.innerHTML = current + '';
+        counterBlock.innerHTML = qCount + '';
+        this.expandQuestion();
+
+    }
+
+    expandQuestion() {
+        const infoBlock = document.querySelector("#question_info");
+        infoBlock.innerHTML = this.task.info;
+        const questionBlock = document.querySelector("#letters");
+        switch (this.task._type) {
+            case'word': {
+
+                this.task.question.forEach(letter => {
+
+                    let div = document.createElement('button');
+                    div.className = 'btn btn-info elem';
+                    div.innerHTML = letter;
+                    questionBlock.append(div);
+
+                });
+
+
+                break;
+            }
+            case'phrase': {
+
+
+
+
+                break;
+            }
+            case'translate': {
+
+
+
+
+                break;
+            }
+            default: {
+                break;
+            }
+
+        }
+
+
+    }
 
 }

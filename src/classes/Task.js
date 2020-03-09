@@ -49,8 +49,9 @@ export class WordTask extends Task {
 
     constructor({ question }) {
         super();
-        this._info = "Соберите слово по буквам";
-        this._question = shuffle(question);
+        this._type = "word";
+        this.info = "Соберите слово по буквам";
+        this.question = shuffle(question);
         this._answer = question;
         this._current = 0;
         this.isComplited = false;
@@ -77,8 +78,9 @@ export class PhraseTask extends Task {
 
     constructor({ question }) {
         super();
-        this._info = "Соберите фразу по словам";
-        this._question = shuffle(question.split(" "));
+        this._type = "phrase";
+        this.info = "Соберите фразу по словам";
+        this.question = shuffle(question.split(" "));
         this._answer = question.split(" ");
         this._current = 0;
         this.isComplited = false;
@@ -105,8 +107,9 @@ export class TranslateTask extends Task {
 
     constructor({ question, answer }) {
         super();
-        this._info = "Переведите слово";
-        this._question = question;
+        this._type = "translate";
+        this.info = "Переведите слово";
+        this.question = question;
         this._answer = answer.toLowerCase();
         this.isComplited = false;
     }
