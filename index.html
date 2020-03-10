@@ -6,7 +6,10 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
     <style>
         .elem {
-            margin-right: 10px;
+            margin-right: 8px;
+        }
+        .field {
+            min-height: 150px;
         }
     </style>
 
@@ -16,8 +19,8 @@
     <h1 class="mb-4">Тренажер для слов</h1>
 
     <div class="card card-default mb-4">
-        <div class="card-body">
-            <div>Задача <span id="current_question">0</span> из <span id="total_questions">0</span></div>
+        <div class="card-body field">
+            <div id="info">Задача <span id="current_question">0</span> из <span id="total_questions">0</span>, время: <span id="timer">0</span> сек.</div>
             <div class="lead mb-3" id="question_info">Задание</div>
             <div id="answer">
 
