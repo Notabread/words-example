@@ -158,6 +158,7 @@ export default class Test {
             });
             sucBlock.innerHTML = `Тест окончен, количество ошибок: ${ mistakes }<br>Время выполнения: ${ time } сек.`;
             questionBlock.append(sucBlock);
+            this.tableGenerate();
             this._service.saveTestState(null);
             return null;
         }
@@ -167,6 +168,29 @@ export default class Test {
         const currentBlock = document.querySelector("#current_question");
         currentBlock.innerHTML = current + '';
         this.expandQuestion();
+    }
+
+    tableGenerate() {
+
+        let field = document.querySelector('#letters');
+        let table = document.createElement('table');
+        table.className = 'table table-hover';
+        let thead = document.createElement('thead');
+        table.append(thead);
+        let tr = document.createElement('tr');
+        thead.append(tr);
+        let tbody = document.createElement('tbody');
+        table.append(tbody);
+        tr.innerHTML = '<th scope="col">#</th><th scope="col">Время выполнения задания</th><th scope="col">Допущено ошибок</th>';
+        this._json.forEach((task, i) => {
+            this._mistakes[i] = this._mistakes[i] ? this._mistakes[i] : 0;
+            let tr = document.createElement('tr');
+            tr.innerHTML = `<th scope="row">${i + 1}</th><td>${this._time[i]} сек.</td><th>${this._mistakes[i]}</th>`;
+            tbody.append(tr);
+        });
+
+        field.append(table);
+        return null;
     }
 
     expandQuestion() {
