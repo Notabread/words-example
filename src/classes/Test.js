@@ -15,8 +15,8 @@ export default class Test {
             });
             self._tasks = [];
             self._current = 0;
-            self._mistakes = 0;
-            self._time = 0;
+            self._mistakes = [];
+            self._time = [];
         };
         if (data) {
             const pop = document.querySelector('#pop');
@@ -28,12 +28,19 @@ export default class Test {
                 this._mistakes = data._mistakes;
                 this._time = data._time;
                 const div = document.querySelector('#timer');
-                div.innerHTML = `(пауза) ${this._time}`;
+                let time = 0;
+                this._time.forEach(task => {
+                    time += task;
+                });
+                console.log(time);
+                div.innerHTML = time;
                 this._json = data._json;
                 this._createTasks(data._json);
                 pop.style.display = 'none';
+                self.startTimer();
             });
             declineBtn.addEventListener('click', () => {
+                this._service.saveTestState(null);
                 pop.style.display = 'none';
                 newTest();
             });
@@ -44,9 +51,9 @@ export default class Test {
     }
 
     _createTasks(data) {
-        if (!this._time) {
-            this._tasks = shuffle(data).map(Task.create);
-            this._current = 0;
+        if (this._time === 0) {
+            this._json = shuffle(data);
+            this._tasks = this._json.map(Task.create);
         } else {
             this._tasks = data.map(Task.create);
         }
@@ -64,12 +71,13 @@ export default class Test {
                     console.log('Нет ошибки');
                 } else {
                     //есть ошибка
-                    self._mistakes++;
+                    self._mistakes[self._current] = self._mistakes[self._current] ? self._mistakes[self._current] + 1 : 1;
+                    console.log(self._mistakes);
                     console.log("Ошибка");
                 }
                 if (task.isComplited) {
-                    self._current++;
                     //функция переключение задачи
+                    self._current++;
                     console.log("След. задача");
                     result = 'next';
                 }
@@ -97,13 +105,17 @@ export default class Test {
 
     startTimer() {
         const div = document.querySelector('#timer');
+        let time = 0;
+        this._time.forEach(task => {
+            time += task;
+        });
         const tik = () => {
-            div.innerHTML = this._time;
+            div.innerHTML = time + '';
         };
-        this._time++;
         tik();
         this._timer = setInterval(() => {
-            this._time++;
+            this._time[this._current] = this._time[this._current] ? this._time[this._current] + 1 : 1;
+            time++;
             tik();
         }, 1000);
     }
@@ -137,7 +149,14 @@ export default class Test {
             let sucBlock = document.createElement('div');
             sucBlock.className = 'alert alert-primary';
             clearInterval(this._timer);
-            sucBlock.innerHTML = `Тест окончен, количество ошибок: ${this._mistakes}<br>Время выполнения: ${this._time} сек.`;
+            let mistakes = 0, time = 0;
+            this._mistakes.forEach((task) => {
+                mistakes += task;
+            });
+            this._time.forEach(task => {
+                time += task;
+            });
+            sucBlock.innerHTML = `Тест окончен, количество ошибок: ${ mistakes }<br>Время выполнения: ${ time } сек.`;
             questionBlock.append(sucBlock);
             this._service.saveTestState(null);
             return null;
