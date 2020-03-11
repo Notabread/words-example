@@ -22,10 +22,6 @@ export class Task {
         throw new Error("checkAnswer should be implemented in subclass");
     }
 
-    getDescription() {
-        return this._info;
-    }
-
     static create(data) {
         const constructor = Task._subclasses[data.type];
         if (constructor) {
@@ -108,7 +104,7 @@ export class TranslateTask extends Task {
     constructor({ question, answer }) {
         super();
         this._type = "translate";
-        this.info = "Переведите слово";
+        this.info = "Напишите перевод слова";
         this.question = question;
         this._answer = answer.toLowerCase();
         this.isComplited = false;

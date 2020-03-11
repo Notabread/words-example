@@ -4,6 +4,10 @@
     "question": "orange"
   },
   {
+    "type": "word",
+    "question": "function"
+  },
+  {
     "type": "phrase",
     "question": "I have a cat"
   },

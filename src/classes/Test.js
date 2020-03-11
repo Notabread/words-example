@@ -6,21 +6,57 @@ export default class Test {
 
     constructor() {
         this._service = new Service('./data.json');
-        this._service.getTasks().then(data => this._createTasks(data));
-        this._tasks = [];
-        this._current = -1;
-        this._mistakes = 0;
-        this._time = 0;
+        let data = this.getData();
+        let self = this;
+        const newTest = function () {
+            self._service.getTasks().then(data => {
+                self._json = data;
+                self._createTasks(data)
+            });
+            self._tasks = [];
+            self._current = 0;
+            self._mistakes = 0;
+            self._time = 0;
+        };
+        if (data) {
+            const pop = document.querySelector('#pop');
+            pop.style.display = 'block';
+            const acceptBtn = document.querySelector('#accept_continue');
+            const declineBtn = document.querySelector('#decline_continue');
+            acceptBtn.addEventListener('click', () => {
+                this._current = data._current;
+                this._mistakes = data._mistakes;
+                this._time = data._time;
+                const div = document.querySelector('#timer');
+                div.innerHTML = `(пауза) ${this._time}`;
+                this._json = data._json;
+                this._createTasks(data._json);
+                pop.style.display = 'none';
+            });
+            declineBtn.addEventListener('click', () => {
+                pop.style.display = 'none';
+                newTest();
+            });
+        } else {
+            newTest();
+        }
+
     }
 
     _createTasks(data) {
-        this._tasks = shuffle(data).map(Task.create);
+        if (!this._time) {
+            this._tasks = shuffle(data).map(Task.create);
+            this._current = 0;
+        } else {
+            this._tasks = data.map(Task.create);
+        }
         this._tasks.forEach(task => {
             const checkFn = task.checkAnswer;
             const self = this;
             task.checkAnswer = function (answer) {
                 let result = checkFn.call(task, answer);
-                if (self._time === 0) {
+                if (!self._timer) {
+                    //Старт таймера
                     self.startTimer();
                 }
                 if (result) {
@@ -35,13 +71,28 @@ export default class Test {
                     self._current++;
                     //функция переключение задачи
                     console.log("След. задача");
-                    return 'next';
+                    result = 'next';
                 }
+                self.saveData();
                 return result;
             }
         });
-        this._current = 0;
         this._boot();
+    }
+
+    saveData() {
+
+        let data = {};
+        data._json = this._json;
+        data._current = this._current;
+        data._mistakes = this._mistakes;
+        data._time = this._time;
+        this._service.saveTestState(data);
+
+    }
+
+    getData() {
+        return this._service.getTestState();
     }
 
     startTimer() {
@@ -49,6 +100,7 @@ export default class Test {
         const tik = () => {
             div.innerHTML = this._time;
         };
+        this._time++;
         tik();
         this._timer = setInterval(() => {
             this._time++;
@@ -75,24 +127,24 @@ export default class Test {
 
     }
 
-    clearField() {
+    changeField() {
+        let current = this._current;
         const infoBlock = document.querySelector("#question_info");
         const answerBlock = document.querySelector('#answer');
         const questionBlock = document.querySelector("#letters");
-        infoBlock.innerHTML = '';
-        answerBlock.innerHTML = '';
         questionBlock.innerHTML = '';
-        let current = this._current;
-
         if (current === this._tasks.length) {
-            let infoBlock = document.querySelector('#info');
-            infoBlock.innerHTML = '';
+            let sucBlock = document.createElement('div');
+            sucBlock.className = 'alert alert-primary';
             clearInterval(this._timer);
-            answerBlock.innerHTML = `Тест окончен, количество ошибок: ${this._mistakes}<br> время выполнения: ${this._time} сек.`;
+            sucBlock.innerHTML = `Тест окончен, количество ошибок: ${this._mistakes}<br>Время выполнения: ${this._time} сек.`;
+            questionBlock.append(sucBlock);
+            this._service.saveTestState(null);
             return null;
         }
-
         current++;
+        infoBlock.innerHTML = '';
+        answerBlock.innerHTML = '';
         const currentBlock = document.querySelector("#current_question");
         currentBlock.innerHTML = current + '';
         this.expandQuestion();
@@ -110,15 +162,10 @@ export default class Test {
                 this.task.question.forEach(letter => {
                     let button = document.createElement('button');
                     button.className = 'btn btn-info elem';
-                    button.id = `task_${letter}`;
                     button.innerHTML = letter;
                     questionBlock.append(button);
                     button.addEventListener('click', () => {
                         let result = this.task.checkAnswer(letter);
-                        if (result === 'next') {
-                            self.clearField();
-                            return null;
-                        }
                         if (result) {
                             //тут функция для скрытия верно нажатых кнопок и тд
                             button.style.display = 'none';
@@ -126,6 +173,10 @@ export default class Test {
                             right.className = 'btn btn-success elem';
                             right.innerHTML = letter;
                             answerBlock.append(right);
+                            if (result === 'next') {
+                                self.changeField();
+                                return null;
+                            }
                         } else {
                             //тут мы подсвечиваем красным неправильно нажатые кнопки
                             button.classList.add('btn-danger');
@@ -142,16 +193,10 @@ export default class Test {
                 this.task.question.forEach(word => {
                     let button = document.createElement('button');
                     button.className = 'btn btn-info elem';
-                    button.id = `task_${word}`;
                     button.innerHTML = word;
                     questionBlock.append(button);
                     button.addEventListener('click', () => {
                         let result = this.task.checkAnswer(word);
-                        if (result === 'next') {
-                            //завершение задания и переход к следующему
-                            self.clearField();
-                            return null;
-                        }
                         if (result) {
                             //тут функция для скрытия верно нажатых кнопок и тд
                             button.style.display = 'none';
@@ -159,6 +204,11 @@ export default class Test {
                             right.className = 'btn btn-success elem';
                             right.innerHTML = word;
                             answerBlock.append(right);
+                            if (result === 'next') {
+                                //завершение задания и переход к следующему
+                                self.changeField();
+                                return null;
+                            }
                         } else {
                             //тут мы подсвечиваем красным неправильно нажатые кнопки
                             button.classList.add('btn-danger');
@@ -186,7 +236,7 @@ export default class Test {
                     let result = this.task.checkAnswer(answer);
                     if (result) {
                         //завершение задания
-                        self.clearField();
+                        self.changeField();
                         return null;
                     } else {
                         //тут вывод сообщения об ошибке
