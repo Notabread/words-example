@@ -17,6 +17,9 @@ export default class Test {
             self._current = 0;
             self._mistakes = [];
             self._time = [];
+            self._time[0] = 0;
+            self._taskProgress = 0;
+            self.isNew = true;
         };
         if (data) {
             const pop = document.querySelector('#pop');
@@ -32,7 +35,7 @@ export default class Test {
                 this._time.forEach(task => {
                     time += task;
                 });
-                console.log(time);
+                this._taskProgress = data._taskProgress;
                 div.innerHTML = time;
                 this._json = data._json;
                 this._createTasks(data._json);
@@ -51,10 +54,11 @@ export default class Test {
     }
 
     _createTasks(data) {
-        if (this._time === 0) {
+        if (this.isNew) {
             this._json = shuffle(data);
             this._tasks = this._json.map(Task.create);
         } else {
+            this._json[this._current]._taskProgress = this._taskProgress;
             this._tasks = data.map(Task.create);
         }
         this._tasks.forEach(task => {
@@ -68,6 +72,7 @@ export default class Test {
                 }
                 if (result) {
                     //нет ошибки
+                    self._taskProgress++;
                     console.log('Нет ошибки');
                 } else {
                     //есть ошибка
@@ -78,6 +83,7 @@ export default class Test {
                 if (task.isComplited) {
                     //функция переключение задачи
                     self._current++;
+                    self._taskProgress = 0;
                     console.log("След. задача");
                     result = 'next';
                 }
@@ -92,6 +98,7 @@ export default class Test {
 
         let data = {};
         data._json = this._json;
+        data._taskProgress = this._taskProgress;
         data._current = this._current;
         data._mistakes = this._mistakes;
         data._time = this._time;
@@ -110,14 +117,14 @@ export default class Test {
             time += task;
         });
         const tik = () => {
-            div.innerHTML = time + '';
+            div.innerHTML = Math.round(time/10) + '';
         };
         tik();
         this._timer = setInterval(() => {
+            time += 1;
             this._time[this._current] = this._time[this._current] ? this._time[this._current] + 1 : 1;
-            time++;
             tik();
-        }, 1000);
+        }, 100);
     }
 
     get task() {
@@ -156,7 +163,7 @@ export default class Test {
             this._time.forEach(task => {
                 time += task;
             });
-            sucBlock.innerHTML = `Тест окончен, количество ошибок: ${ mistakes }<br>Время выполнения: ${ time } сек.`;
+            sucBlock.innerHTML = `Тест окончен, количество ошибок: ${ mistakes }<br>Время выполнения: ${ time/10 } сек.`;
             questionBlock.append(sucBlock);
             this.tableGenerate();
             this._service.saveTestState(null);
@@ -185,7 +192,7 @@ export default class Test {
         this._json.forEach((task, i) => {
             this._mistakes[i] = this._mistakes[i] ? this._mistakes[i] : 0;
             let tr = document.createElement('tr');
-            tr.innerHTML = `<th scope="row">${i + 1}</th><td>${this._time[i]} сек.</td><th>${this._mistakes[i]}</th>`;
+            tr.innerHTML = `<th scope="row">${i + 1} (${ this._json[i].question })</th><td>${this._time[i]/10} сек.</td><th>${this._mistakes[i]}</th>`;
             tbody.append(tr);
         });
 
@@ -201,38 +208,54 @@ export default class Test {
         const self = this;
         switch (this.task._type) {
             case'word': {
-
-                this.task.question.forEach(letter => {
+                if (this._taskProgress > 0) {
+                    for (let i = 0; i < this._taskProgress; i++) {
+                        let button = document.createElement('button');
+                        let letter = this.task._answer[i];
+                        button.className = 'btn btn-success elem';
+                        answerBlock.append(button);
+                        button.innerHTML = letter;
+                    }
+                }
+                this.task.question.forEach((letter) => {
                     let button = document.createElement('button');
-                    button.className = 'btn btn-info elem';
-                    button.innerHTML = letter;
-                    questionBlock.append(button);
-                    button.addEventListener('click', () => {
-                        let result = this.task.checkAnswer(letter);
-                        if (result) {
-                            //тут функция для скрытия верно нажатых кнопок и тд
-                            button.style.display = 'none';
-                            let right = document.createElement('button');
-                            right.className = 'btn btn-success elem';
-                            right.innerHTML = letter;
-                            answerBlock.append(right);
-                            if (result === 'next') {
-                                self.changeField();
-                                return null;
+                        button.className = 'btn btn-info elem';
+                        questionBlock.append(button);
+                        button.addEventListener('click', () => {
+                            let result = this.task.checkAnswer(letter);
+                            if (result) {
+                                //тут функция для скрытия верно нажатых кнопок и тд
+                                button.style.display = 'none';
+                                let right = document.createElement('button');
+                                right.className = 'btn btn-success elem';
+                                right.innerHTML = letter;
+                                answerBlock.append(right);
+                                if (result === 'next') {
+                                    self.changeField();
+                                    return null;
+                                }
+                            } else {
+                                //тут мы подсвечиваем красным неправильно нажатые кнопки
+                                button.classList.add('btn-danger');
+                                setTimeout(() => {
+                                    button.classList.remove('btn-danger');
+                                }, 300);
                             }
-                        } else {
-                            //тут мы подсвечиваем красным неправильно нажатые кнопки
-                            button.classList.add('btn-danger');
-                            setTimeout(() => {
-                                button.classList.remove('btn-danger');
-                            }, 300);
-                        }
-                    });
+                        });
+                    button.innerHTML = letter;
                 });
                 break;
             }
             case'phrase': {
-
+                if (this._taskProgress > 0) {
+                    for (let i = 0; i < this._taskProgress; i++) {
+                        let button = document.createElement('button');
+                        let word = this.task._answer[i];
+                        button.className = 'btn btn-success elem';
+                        answerBlock.append(button);
+                        button.innerHTML = word;
+                    }
+                }
                 this.task.question.forEach(word => {
                     let button = document.createElement('button');
                     button.className = 'btn btn-info elem';
@@ -264,7 +287,6 @@ export default class Test {
                 break;
             }
             case'translate': {
-
                 questionBlock.innerHTML = this.task.question;
                 let form = document.createElement('form');
                 let div = document.createElement('div');
@@ -303,12 +325,9 @@ export default class Test {
                 div.append(input);
                 answerBlock.append(form);
                 break;
-
             }
             default: {
-
                 break;
-
             }
         }
     }

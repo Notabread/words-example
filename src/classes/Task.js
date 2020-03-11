@@ -43,14 +43,22 @@ Task._subclasses = {};
 
 export class WordTask extends Task {
 
-    constructor({ question }) {
+    constructor({ question, _taskProgress = 0 }) {
         super();
         this._type = "word";
         this.info = "Соберите слово по буквам";
-        this.question = shuffle(question);
         this._answer = question;
-        this._current = 0;
+        this._current = _taskProgress;
+        this.question = _taskProgress ? this.newProgress() : shuffle(question);
         this.isComplited = false;
+    }
+
+    newProgress() {
+        let newQuestion = '';
+        for (let i = this._current; i < this._answer.length ; i++) {
+            newQuestion += this._answer[i];
+        }
+        return shuffle(newQuestion);
     }
 
     get currentLetter() {
@@ -72,14 +80,22 @@ export class WordTask extends Task {
 
 export class PhraseTask extends Task {
 
-    constructor({ question }) {
+    constructor({ question, _taskProgress = 0  }) {
         super();
         this._type = "phrase";
         this.info = "Соберите фразу по словам";
-        this.question = shuffle(question.split(" "));
         this._answer = question.split(" ");
-        this._current = 0;
+        this._current = _taskProgress;
+        this.question =  _taskProgress ? this.newProgress() : shuffle(this._answer);
         this.isComplited = false;
+    }
+
+    newProgress() {
+        let newQuestion = [];
+        for (let i = this._current; i < this._answer.length ; i++) {
+            newQuestion.push(this._answer[i]);
+        }
+        return shuffle(newQuestion);
     }
 
     get currentWord() {
