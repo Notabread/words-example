@@ -14,6 +14,7 @@ export default class TaskModule {
     }
 
     static register(key, constructor) {
+        //Вот сюда не попадут запросы на регистрацию из дочерних классов
         if (TaskModule._modules[key]) {
             throw new Error(`Module ${key} already registered!`);
         }
