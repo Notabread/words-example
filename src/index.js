@@ -1,7 +1,8 @@
 import Test from "./classes/Test";
+import Service from "./classes/Service";
+import UIController from "./classes/UIController";
 
-window.addEventListener("load", function () {
-
-    window.test = new Test();
-
+window.test = new Test({
+    service: new Service("./data.json"),
+    ui: new UIController(),
 });

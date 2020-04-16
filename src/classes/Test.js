@@ -1,11 +1,14 @@
-import Service from "./Service";
 import { Task } from "./Task";
 import shuffle from "lodash/shuffle"
 
 export default class Test {
 
-    constructor() {
-        this._service = new Service('./data.json');
+    constructor({ service, ui }) {
+        this._service = service;
+        this._ui = ui;
+        this._ui.setTest(this);
+
+
         let data = this.getData();
         let self = this;
         const newTest = function () {
@@ -91,7 +94,7 @@ export default class Test {
                 return result;
             }
         });
-        this._boot();
+        this.boot();
     }
 
     saveData() {
@@ -134,7 +137,7 @@ export default class Test {
         return null;
     }
 
-    _boot() {
+    boot() {
 
         const qCount = this._tasks.length;
         let current = this._current + 1;
