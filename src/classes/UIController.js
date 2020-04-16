@@ -1,3 +1,5 @@
+import TaskModule from "./ui/TaskModule";
+
 export default class UIController {
 
     constructor() {
@@ -33,8 +35,22 @@ export default class UIController {
         }
     }
 
+    ['_test:saved']() {
+        //Отрисовка сообщения о незакоченном тесте
+        TaskModule.create({ type: 'saved' });
+    }
+
+    ['_test:finished']() {
+        //Отрисовка результатов
+    }
+
     ['_task:change']() {
         //Смена задачи
+        //Получить текущую задачу
+        const { task }  = this._test;
+
+        //Кинуть её отрисовщику
+        console.log(task);
     }
 
     ['_answer:incorrect']() {

@@ -8,7 +8,6 @@ export default class Test {
         this._ui = ui;
         this._ui.setTest(this);
 
-
         let data = this.getData();
         let self = this;
         const newTest = function () {
@@ -25,31 +24,28 @@ export default class Test {
             self.isNew = true;
         };
         if (data) {
-            const pop = document.querySelector('#pop');
-            pop.style.display = 'block';
-            const acceptBtn = document.querySelector('#accept_continue');
-            const declineBtn = document.querySelector('#decline_continue');
-            acceptBtn.addEventListener('click', () => {
-                this._current = data._current;
-                this._mistakes = data._mistakes;
-                this._time = data._time;
-                const div = document.querySelector('#timer');
-                let time = 0;
-                this._time.forEach(task => {
-                    time += task;
-                });
-                this._taskProgress = data._taskProgress;
-                div.innerHTML = time;
-                this._json = data._json;
-                this._createTasks(data._json);
-                pop.style.display = 'none';
-                self.startTimer();
-            });
-            declineBtn.addEventListener('click', () => {
-                this._service.saveTestState(null);
-                pop.style.display = 'none';
-                newTest();
-            });
+            this._ui.UIHandler('test:saved');
+            // acceptBtn.addEventListener('click', () => {
+            //     this._current = data._current;
+            //     this._mistakes = data._mistakes;
+            //     this._time = data._time;
+            //     const div = document.querySelector('#timer');
+            //     let time = 0;
+            //     this._time.forEach(task => {
+            //         time += task;
+            //     });
+            //     this._taskProgress = data._taskProgress;
+            //     div.innerHTML = time;
+            //     this._json = data._json;
+            //     this._createTasks(data._json);
+            //     pop.style.display = 'none';
+            //     self.startTimer();
+            // });
+            // declineBtn.addEventListener('click', () => {
+            //     this._service.saveTestState(null);
+            //     pop.style.display = 'none';
+            //     newTest();
+            // });
         } else {
             newTest();
         }
@@ -97,21 +93,6 @@ export default class Test {
         this.boot();
     }
 
-    saveData() {
-
-        let data = {};
-        data._json = this._json;
-        data._taskProgress = this._taskProgress;
-        data._current = this._current;
-        data._mistakes = this._mistakes;
-        data._time = this._time;
-        this._service.saveTestState(data);
-
-    }
-
-    getData() {
-        return this._service.getTestState();
-    }
 
     startTimer() {
         const div = document.querySelector('#timer');
@@ -130,12 +111,6 @@ export default class Test {
         }, 100);
     }
 
-    get task() {
-        if (this._current >= 0) {
-            return this._tasks[this._current];
-        }
-        return null;
-    }
 
     boot() {
 
@@ -204,6 +179,7 @@ export default class Test {
     }
 
     expandQuestion() {
+        this._ui.UIHandler('task:change');
         const infoBlock = document.querySelector("#question_info");
         infoBlock.innerHTML = this.task.info;
         const questionBlock = document.querySelector("#letters");
@@ -335,4 +311,26 @@ export default class Test {
         }
     }
 
+    get task() {
+        if (this._current >= 0) {
+            return this._tasks[this._current];
+        }
+        return null;
+    }
+
+    saveData() {
+
+        let data = {};
+        data._json = this._json;
+        data._taskProgress = this._taskProgress;
+        data._current = this._current;
+        data._mistakes = this._mistakes;
+        data._time = this._time;
+        this._service.saveTestState(data);
+
+    }
+
+    getData() {
+        return this._service.getTestState();
+    }
 }
