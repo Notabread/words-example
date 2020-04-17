@@ -1,4 +1,6 @@
 import TaskModule from "./ui/TaskModule";
+import PopModule from "./ui/PopModule";
+import WordModule from "./ui/WordModule";
 
 export default class UIController {
 
@@ -14,30 +16,37 @@ export default class UIController {
     _loadHandler() {
         window.addEventListener('load', () => {
             if (this._test.isReady) {
-                this._test.boot();
+                //this._test.inputHandler('test:boot');
+                TaskModule.create({type: 'pop', test: this._test, isNew: true});
+            }
+            if (this._test.isSaved) {
+                TaskModule.create({type: 'pop', test: this._test});
             }
             this._isLoaded = true;
         });
     }
 
-    UIHandler(msg) {
+    UIHandler(msg, payload = {}) {
         const handler = `_${msg}`;
         if (typeof this[handler] === 'function') {
-            this[handler]();
+            this[handler](payload);
         } else {
-            console.warn(`There is no handler for ${msg}!`);
-        }
-    }
-
-    ['_test:ready']() {
-        if (this._isLoaded) {
-            this._test.boot();
+            console.warn(`UI: There is no handler for ${msg}!`);
         }
     }
 
     ['_test:saved']() {
         //Отрисовка сообщения о незакоченном тесте
-        TaskModule.create({ type: 'saved' });
+        if (this._isLoaded) {
+            TaskModule.create({type: 'pop', test: this._test});
+        }
+    }
+
+    ['_test:ready']() {
+        if (this._isLoaded) {
+            //Отрисовка сообщения о готовности начать новый тест
+            TaskModule.create({ type: 'pop', test: this._test, isNew: true });
+        }
     }
 
     ['_test:finished']() {
@@ -50,7 +59,7 @@ export default class UIController {
         const { task }  = this._test;
 
         //Кинуть её отрисовщику
-        console.log(task);
+        //console.log(task);
     }
 
     ['_answer:incorrect']() {

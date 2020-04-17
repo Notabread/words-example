@@ -1,6 +1,6 @@
 import shuffle from "lodash/shuffle"
 
-export class Task {
+export default class Task {
     //проверить ответ
     //подготовить задание
     /*

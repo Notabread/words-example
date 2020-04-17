@@ -1,4 +1,4 @@
-import { Task } from "./Task";
+import Task from "./Task";
 import shuffle from "lodash/shuffle"
 
 export default class Test {
@@ -6,54 +6,76 @@ export default class Test {
     constructor({ service, ui }) {
         this._service = service;
         this._ui = ui;
+        this._status = 'not ready';
         this._ui.setTest(this);
-
-        let data = this.getData();
-        let self = this;
-        const newTest = function () {
-            self._service.getTasks().then(data => {
-                self._json = data;
-                self._createTasks(data)
-            });
-            self._tasks = [];
-            self._current = 0;
-            self._mistakes = [];
-            self._time = [];
-            self._time[0] = 0;
-            self._taskProgress = 0;
-            self.isNew = true;
-        };
-        if (data) {
-            this._ui.UIHandler('test:saved');
-            // acceptBtn.addEventListener('click', () => {
-            //     this._current = data._current;
-            //     this._mistakes = data._mistakes;
-            //     this._time = data._time;
-            //     const div = document.querySelector('#timer');
-            //     let time = 0;
-            //     this._time.forEach(task => {
-            //         time += task;
-            //     });
-            //     this._taskProgress = data._taskProgress;
-            //     div.innerHTML = time;
-            //     this._json = data._json;
-            //     this._createTasks(data._json);
-            //     pop.style.display = 'none';
-            //     self.startTimer();
-            // });
-            // declineBtn.addEventListener('click', () => {
-            //     this._service.saveTestState(null);
-            //     pop.style.display = 'none';
-            //     newTest();
-            // });
+        this._savedData = this.getData();
+        if (this._savedData) {
+            this._continueTest();
         } else {
-            newTest();
+            this._newTest();
         }
-
     }
 
+    _newTest() {
+        this._service.saveTestState(null);
+        this._tasks = [];
+        this._current = 0;
+        this._mistakes = [];
+        this._time = [];
+        this._time[0] = 0;
+        this._taskProgress = 0;
+        this._isNew = true;
+        this._service.getTasks().then(data => {
+            this._json = data;
+            this._status = 'ready';
+            this._ui.UIHandler('test:ready');
+        });
+    }
+
+    _continueTest() {
+        let data = this._savedData;
+        this._current = data._current;
+        this._mistakes = data._mistakes;
+        this._time = data._time;
+        this._taskProgress = data._taskProgress;
+        this._json = data._json;
+        this._status = 'saved';
+        this._ui.UIHandler('test:saved');
+    }
+
+    inputHandler(msg) {
+        const handler = `_${msg}`;
+        if (typeof this[handler] === 'function') {
+            this[handler]();
+        } else {
+            console.warn(`Test: There is no handler for ${msg}!`);
+        }
+    }
+
+    ['_test:continue']() {
+        console.log('Тест возобновлён');
+        this['_test:boot']();
+    }
+
+    ['_test:new']() {
+        console.log('Запрос нового теста');
+        this._newTest();
+    }
+
+    ['_test:boot']() {
+        console.log('Запуск теста');
+
+        document.querySelector('#pop').style.display = 'none';
+        document.querySelector('#new_test').style.display = 'none';
+
+        this._startTimer();
+        this._createTasks(this._json);
+    }
+
+
+
     _createTasks(data) {
-        if (this.isNew) {
+        if (this._isNew) {
             this._json = shuffle(data);
             this._tasks = this._json.map(Task.create);
         } else {
@@ -65,10 +87,6 @@ export default class Test {
             const self = this;
             task.checkAnswer = function (answer) {
                 let result = checkFn.call(task, answer);
-                if (!self._timer) {
-                    //Старт таймера
-                    self.startTimer();
-                }
                 if (result) {
                     //нет ошибки
                     self._taskProgress++;
@@ -94,21 +112,21 @@ export default class Test {
     }
 
 
-    startTimer() {
+    _startTimer() {
         const div = document.querySelector('#timer');
         let time = 0;
         this._time.forEach(task => {
             time += task;
         });
         const tik = () => {
-            div.innerHTML = Math.round(time/10) + '';
+            div.innerHTML = time;
         };
         tik();
         this._timer = setInterval(() => {
             time += 1;
             this._time[this._current] = this._time[this._current] ? this._time[this._current] + 1 : 1;
             tik();
-        }, 100);
+        }, 1000);
     }
 
 
@@ -141,7 +159,7 @@ export default class Test {
             this._time.forEach(task => {
                 time += task;
             });
-            sucBlock.innerHTML = `Тест окончен, количество ошибок: ${ mistakes }<br>Время выполнения: ${ time/10 } сек.`;
+            sucBlock.innerHTML = `Тест окончен, количество ошибок: ${ mistakes }<br>Время выполнения: ${ time } сек.`;
             questionBlock.append(sucBlock);
             this.tableGenerate();
             this._service.saveTestState(null);
@@ -170,7 +188,7 @@ export default class Test {
         this._json.forEach((task, i) => {
             this._mistakes[i] = this._mistakes[i] ? this._mistakes[i] : 0;
             let tr = document.createElement('tr');
-            tr.innerHTML = `<th scope="row">${i + 1} (${ this._json[i].question })</th><td>${this._time[i]/10} сек.</td><th>${this._mistakes[i]}</th>`;
+            tr.innerHTML = `<th scope="row">${i + 1} (${ this._json[i].question })</th><td>${this._time[i]} сек.</td><th>${this._mistakes[i]}</th>`;
             tbody.append(tr);
         });
 
@@ -316,6 +334,14 @@ export default class Test {
             return this._tasks[this._current];
         }
         return null;
+    }
+
+    get isReady() {
+        return this._status === 'ready';
+    }
+
+    get isSaved() {
+        return this._status === 'saved';
     }
 
     saveData() {

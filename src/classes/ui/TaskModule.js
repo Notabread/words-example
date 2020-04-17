@@ -1,8 +1,7 @@
 export default class TaskModule {
 
-    constructor() {
-
-
+    constructor(data) {
+        this._test = data.test;
     }
 
     static create(data) {
