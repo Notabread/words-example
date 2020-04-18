@@ -11,7 +11,6 @@ export default class WordModule extends TaskModule {
                 button.className = 'btn btn-success elem';
                 this.answerBlock.append(button);
                 button.innerHTML = letter;
-                console.log('sss');
             }
         }
         this._test.task.question.forEach((letter) => {

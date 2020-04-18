@@ -3,6 +3,12 @@ import shuffle from "lodash/shuffle"
 
 export default class Test {
 
+    /**
+     * Устанавливаем класс сервиса и графического интерфейса, затем проверяем наличие сохранённых данных
+     *
+     * @param service
+     * @param ui
+     */
     constructor({ service, ui }) {
         this._service = service;
         this._ui = ui;
@@ -17,6 +23,11 @@ export default class Test {
         }
     }
 
+    /**
+     * Функция, которая подготавливает новый тест
+     *
+     * @private
+     */
     _newTest() {
         this._service.saveTestState(null);
         this._current = 0;
@@ -32,6 +43,11 @@ export default class Test {
         });
     }
 
+    /**
+     * Функция, которая подготавливает незавершённый тест
+     *
+     * @private
+     */
     _continueTest() {
         let data = this._savedData;
         this._current = data._current;
@@ -43,6 +59,12 @@ export default class Test {
         this._ui.UIHandler('test:saved');
     }
 
+    /**
+     * Обработчик сообщений
+     *
+     * @param msg
+     * @param payload
+     */
     inputHandler(msg, payload = {}) {
         const handler = `_${msg}`;
         if (typeof this[handler] === 'function') {
@@ -52,16 +74,31 @@ export default class Test {
         }
     }
 
+    /**
+     * Функция, которая вызывается нажатием кнопки "продолжить тест" и запускает выполнение незавершённого теста
+     *
+     * @private
+     */
     ['_test:continue']() {
         console.log('Тест возобновлён');
         this['_test:boot']();
     }
 
+    /**
+     * Функция, которая вызывается нажатием кнопки "начать новый тест". Запрашивает новый тест
+     *
+     * @private
+     */
     ['_test:new']() {
         console.log('Запрос нового теста');
         this._newTest();
     }
 
+    /**
+     * Основная функция запуска теста. Запускает таймер, готовит задачи и делает запрос на рендер первой
+     *
+     * @private
+     */
     ['_test:boot']() {
         console.log('Запуск теста');
         this._startTimer();
@@ -69,10 +106,22 @@ export default class Test {
         this._ui.UIHandler('task:change');
     }
 
+    /**
+     * Запрашивет проверку ответа
+     *
+     * @param answer
+     * @private
+     */
     ['_answer:check']({ answer }) {
         this.task.checkAnswer(answer);
     }
 
+    /**
+     * Подготавливает задачи, задаёт каждой функцию проверки ответа
+     *
+     * @param data
+     * @private
+     */
     _createTasks(data) {
         if (this._isNew) {
             this._json = shuffle(data);
@@ -117,6 +166,11 @@ export default class Test {
         });
     }
 
+    /**
+     * Получение текущей задачи
+     *
+     * @returns {null|*}
+     */
     get task() {
         if (this._current >= 0) {
             return this._tasks[this._current];
@@ -124,10 +178,11 @@ export default class Test {
         return null;
     }
 
-    get isReady() {
-        return this._status === 'ready';
-    }
-
+    /**
+     * Получение информации о количестве задач
+     *
+     * @returns {{current: number, total: number}}
+     */
     get state() {
         return {
             current: this._current,
@@ -135,10 +190,28 @@ export default class Test {
         }
     }
 
+    /**
+     * Возвращает готовность теста
+     *
+     * @returns {boolean}
+     */
+    get isReady() {
+        return this._status === 'ready';
+    }
+
+    /**
+     * Показывает, что есть сохранённые данные о незавершённом тесте
+     *
+     * @returns {boolean}
+     */
     get isSaved() {
         return this._status === 'saved';
     }
 
+    /**
+     * Сохранение состояния теста
+     *
+     */
     saveData() {
         let data = {};
         data._json = this._json;
@@ -149,10 +222,20 @@ export default class Test {
         this._service.saveTestState(data);
     }
 
+    /**
+     * Получение состояния теста
+     *
+     * @returns {any | null}
+     */
     getData() {
         return this._service.getTestState();
     }
 
+    /**
+     * Функция запуска таймера
+     *
+     * @private
+     */
     _startTimer() {
         let time = 0;
         this._time.forEach(task => {

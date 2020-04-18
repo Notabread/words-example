@@ -12,7 +12,6 @@ export default class Task {
         }
      */
     constructor() {
-        this._info = '';
         if (this.constructor === Task) {
             throw new Error("It's not possible to create an instance of abstract class");
         }
