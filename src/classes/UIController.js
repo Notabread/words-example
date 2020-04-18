@@ -7,15 +7,29 @@ import TranslateModule from "./ui/TranslateModule";
 
 export default class UIController {
 
+    /**
+     * Запуск обработчика загрузки страницы
+     *
+     */
     constructor() {
         this._loadHandler();
         this._isLoaded = false;
     }
 
+    /**
+     * Получение экземпляра основного класса Test
+     *
+     * @param test
+     */
     setTest(test) {
         this._test = test;
     }
 
+    /**
+     * Обработчик события load. Ждём, чтобы страница полностью загрузилась перед началом теста
+     *
+     * @private
+     */
     _loadHandler() {
         window.addEventListener('load', () => {
             if (this._test.isReady) {
@@ -28,6 +42,13 @@ export default class UIController {
         });
     }
 
+    /**
+     * Обработчик сообщений от логического слоя
+     *
+     * @param msg
+     * @param payload
+     * @constructor
+     */
     UIHandler(msg, payload = {}) {
         const handler = `_${msg}`;
         if (typeof this[handler] === 'function') {
@@ -37,44 +58,73 @@ export default class UIController {
         }
     }
 
+    /**
+     * Запрос на отрисовку сообщения о незаконченном тесте
+     *
+     * @private
+     */
     ['_test:saved']() {
-        //Отрисовка сообщения о незакоченном тесте
         if (this._isLoaded) {
             TaskModule.create({type: 'pop', test: this._test});
         }
     }
 
+    /**
+     * Запрос на отрисовку сообщения о готовности начать новый тест
+     *
+     * @private
+     */
     ['_test:ready']() {
         if (this._isLoaded) {
-            //Отрисовка сообщения о готовности начать новый тест
             TaskModule.create({ type: 'pop', test: this._test, isNew: true });
         }
     }
 
+    /**
+     * Конец теста
+     * Запрос на генерацию таблицы с результатами
+     *
+     * @param results
+     * @private
+     */
     ['_test:finished'](results) {
-        //Отрисовка результатов
         this._currentTask = TaskModule.create({ type: 'table', test: this._test, results: results });
     }
 
+    /**
+     * Запрос на отрисовку новой задачи
+     *
+     * @private
+     */
     ['_task:change']() {
-        //Смена задачи
-        //Получить текущую задачу
         const { task }  = this._test;
-
-        //Кинуть её отрисовщику
         this._currentTask = TaskModule.create({ type: task.type, test: this._test });
     }
 
+    /**
+     * Запрос на реакцию о неверном ответе
+     *
+     * @private
+     */
     ['_answer:incorrect']() {
-        //Ответ неправильный
         this._currentTask.incorrect();
     }
 
+    /**
+     * Запрос на реакцию о верном ответе
+     *
+     * @private
+     */
     ['_answer:correct']() {
-        //Ответ верный
         this._currentTask.correct();
     }
 
+    /**
+     * Отрисовка количества прошедших секунд
+     *
+     * @param time
+     * @private
+     */
     ['_counter:tick']({ time }) {
         document.querySelector('#timer').innerHTML = time;
     }
