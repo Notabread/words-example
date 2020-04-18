@@ -5,23 +5,24 @@ export default class WordModule extends TaskModule {
     _render() {
         super._render();
         if (this._test.taskProgress > 0) {
-            for (let i = 0; i < this.taskProgress; i++) {
+            for (let i = 0; i < this._test.taskProgress; i++) {
                 let button = document.createElement('button');
-                let letter = this.task._answer[i];
+                let letter = this._test.task._answer[i];
                 button.className = 'btn btn-success elem';
                 this.answerBlock.append(button);
                 button.innerHTML = letter;
+                console.log('sss');
             }
         }
         this._test.task.question.forEach((letter) => {
             let button = document.createElement('button');
             button.className = 'btn btn-info elem';
+            button.innerHTML = letter;
             this.questionBlock.append(button);
             button.addEventListener('click', () => {
                 this._currentBtn = button;
                 this._test.inputHandler('answer:check', { answer: letter });
             });
-            button.innerHTML = letter;
         });
     }
 

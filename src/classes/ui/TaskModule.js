@@ -26,7 +26,7 @@ export default class TaskModule {
         this.totalBlock = document.querySelector("#total_questions");
         this.currentBlock = document.querySelector("#current_question");
         this.totalBlock.innerHTML = total;
-        this.currentBlock.innerHTML = current;
+        this.currentBlock.innerHTML = current + 1;
     }
 
     static create(data) {
@@ -34,12 +34,12 @@ export default class TaskModule {
         if (constructor) {
             return new constructor(data);
         }
-        throw new Error(`There is no constructor for ${data.type}!`);
+        throw new Error(`UI: There is no constructor for ${data.type}!`);
     }
 
     static register(key, constructor) {
         if (TaskModule._modules[key]) {
-            throw new Error(`Module ${key} already registered!`);
+            throw new Error(`UI: Module ${key} already registered!`);
         }
         TaskModule._modules[key] = constructor;
     }

@@ -1,5 +1,6 @@
 import TaskModule from "./ui/TaskModule";
 import PopModule from "./ui/PopModule";
+import TableModule from "./ui/TableModule";
 import WordModule from "./ui/WordModule";
 import PhraseModule from "./ui/PhraseModule";
 import TranslateModule from "./ui/TranslateModule";
@@ -18,7 +19,6 @@ export default class UIController {
     _loadHandler() {
         window.addEventListener('load', () => {
             if (this._test.isReady) {
-                //this._test.inputHandler('test:boot');
                 TaskModule.create({type: 'pop', test: this._test, isNew: true});
             }
             if (this._test.isSaved) {
@@ -51,9 +51,9 @@ export default class UIController {
         }
     }
 
-    ['_test:finished']() {
+    ['_test:finished'](results) {
         //Отрисовка результатов
-        console.log('ui: Тест закончен');
+        this._currentTask = TaskModule.create({ type: 'table', test: this._test, results: results });
     }
 
     ['_task:change']() {
