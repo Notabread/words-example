@@ -2,6 +2,31 @@ export default class TaskModule {
 
     constructor(data) {
         this._test = data.test;
+        this.infoBlock = document.querySelector("#question_info");
+        this.questionBlock = document.querySelector("#letters");
+        this.answerBlock = document.querySelector('#answer');
+        document.querySelector('#pop').style.display = 'none';
+        document.querySelector('#new_test').style.display = 'none';
+        this._render(data);
+    }
+
+    _render() {
+        this._clearField();
+        this._setCurrent();
+    }
+
+    _clearField() {
+        this.questionBlock.innerHTML = '';
+        this.infoBlock.innerHTML = '';
+        this.answerBlock.innerHTML = '';
+    }
+
+    _setCurrent() {
+        let { total, current } = this._test.state;
+        this.totalBlock = document.querySelector("#total_questions");
+        this.currentBlock = document.querySelector("#current_question");
+        this.totalBlock.innerHTML = total;
+        this.currentBlock.innerHTML = current;
     }
 
     static create(data) {
@@ -13,7 +38,6 @@ export default class TaskModule {
     }
 
     static register(key, constructor) {
-        //Вот сюда не попадут запросы на регистрацию из дочерних классов
         if (TaskModule._modules[key]) {
             throw new Error(`Module ${key} already registered!`);
         }

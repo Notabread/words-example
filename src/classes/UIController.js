@@ -1,6 +1,8 @@
 import TaskModule from "./ui/TaskModule";
 import PopModule from "./ui/PopModule";
 import WordModule from "./ui/WordModule";
+import PhraseModule from "./ui/PhraseModule";
+import TranslateModule from "./ui/TranslateModule";
 
 export default class UIController {
 
@@ -51,6 +53,7 @@ export default class UIController {
 
     ['_test:finished']() {
         //Отрисовка результатов
+        console.log('ui: Тест закончен');
     }
 
     ['_task:change']() {
@@ -59,15 +62,21 @@ export default class UIController {
         const { task }  = this._test;
 
         //Кинуть её отрисовщику
-        //console.log(task);
+        this._currentTask = TaskModule.create({ type: task.type, test: this._test });
     }
 
     ['_answer:incorrect']() {
         //Ответ неправильный
+        this._currentTask.incorrect();
     }
 
     ['_answer:correct']() {
         //Ответ верный
+        this._currentTask.correct();
+    }
+
+    ['_counter:tick']({ time }) {
+        document.querySelector('#timer').innerHTML = time;
     }
 
 }

@@ -22,6 +22,10 @@ export default class Task {
         throw new Error("checkAnswer should be implemented in subclass");
     }
 
+    get type() {
+        return this._type;
+    }
+
     static create(data) {
         const constructor = Task._subclasses[data.type];
         if (constructor) {

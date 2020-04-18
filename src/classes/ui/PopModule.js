@@ -2,15 +2,10 @@ import TaskModule from "./TaskModule";
 
 export default class PopModule extends TaskModule {
 
-    constructor(data) {
-        super(data);
-        this._render(data);
-    }
-
     _render({ isNew = false }) {
+        super._render();
         if (isNew) {
             console.log('ui: Вывод сообщения о новом тесте');
-            document.querySelector('#pop').style.display = 'none';
             const pop = document.querySelector('#new_test');
             const acceptBtn = document.querySelector('#ready_for_new');
             pop.style.display = 'block';

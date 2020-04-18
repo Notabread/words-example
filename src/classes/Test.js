@@ -8,6 +8,7 @@ export default class Test {
         this._ui = ui;
         this._status = 'not ready';
         this._ui.setTest(this);
+        this._tasks = [];
         this._savedData = this.getData();
         if (this._savedData) {
             this._continueTest();
@@ -18,12 +19,11 @@ export default class Test {
 
     _newTest() {
         this._service.saveTestState(null);
-        this._tasks = [];
-        this._current = 0;
+        this._current = 1;
         this._mistakes = [];
         this._time = [];
         this._time[0] = 0;
-        this._taskProgress = 0;
+        this.taskProgress = 0;
         this._isNew = true;
         this._service.getTasks().then(data => {
             this._json = data;
@@ -37,16 +37,16 @@ export default class Test {
         this._current = data._current;
         this._mistakes = data._mistakes;
         this._time = data._time;
-        this._taskProgress = data._taskProgress;
+        this.taskProgress = data._taskProgress;
         this._json = data._json;
         this._status = 'saved';
         this._ui.UIHandler('test:saved');
     }
 
-    inputHandler(msg) {
+    inputHandler(msg, payload = {}) {
         const handler = `_${msg}`;
         if (typeof this[handler] === 'function') {
-            this[handler]();
+            this[handler](payload);
         } else {
             console.warn(`Test: There is no handler for ${msg}!`);
         }
@@ -64,22 +64,21 @@ export default class Test {
 
     ['_test:boot']() {
         console.log('Запуск теста');
-
-        document.querySelector('#pop').style.display = 'none';
-        document.querySelector('#new_test').style.display = 'none';
-
         this._startTimer();
         this._createTasks(this._json);
+        this.boot();
     }
 
-
+    ['_answer:check']({ answer }) {
+        this.task.checkAnswer(answer);
+    }
 
     _createTasks(data) {
         if (this._isNew) {
             this._json = shuffle(data);
             this._tasks = this._json.map(Task.create);
         } else {
-            this._json[this._current]._taskProgress = this._taskProgress;
+            this._json[this._current]._taskProgress = this.taskProgress;
             this._tasks = data.map(Task.create);
         }
         this._tasks.forEach(task => {
@@ -89,63 +88,38 @@ export default class Test {
                 let result = checkFn.call(task, answer);
                 if (result) {
                     //нет ошибки
-                    self._taskProgress++;
+                    self.taskProgress++;
+                    self._ui.UIHandler('answer:correct');
                     console.log('Нет ошибки');
                 } else {
                     //есть ошибка
                     self._mistakes[self._current] = self._mistakes[self._current] ? self._mistakes[self._current] + 1 : 1;
-                    console.log(self._mistakes);
+                    self._ui.UIHandler('answer:incorrect');
                     console.log("Ошибка");
                 }
                 if (task.isComplited) {
                     //функция переключение задачи
                     self._current++;
-                    self._taskProgress = 0;
-                    console.log("След. задача");
-                    result = 'next';
+                    self.taskProgress = 0;
+                    if (!self.task) {
+                        self._ui.UIHandler('test:finished');
+                    }
+                    self._ui.UIHandler('task:change');
+                    console.log("Смена задачи");
+                    result = 'next'; //Скоро можно будет это убрать
                 }
-                self.saveData();
                 return result;
             }
         });
-        this.boot();
     }
-
-
-    _startTimer() {
-        const div = document.querySelector('#timer');
-        let time = 0;
-        this._time.forEach(task => {
-            time += task;
-        });
-        const tik = () => {
-            div.innerHTML = time;
-        };
-        tik();
-        this._timer = setInterval(() => {
-            time += 1;
-            this._time[this._current] = this._time[this._current] ? this._time[this._current] + 1 : 1;
-            tik();
-        }, 1000);
-    }
-
 
     boot() {
-
-        const qCount = this._tasks.length;
-        let current = this._current + 1;
-        const counterBlock = document.querySelector("#total_questions");
-        const currentBlock = document.querySelector("#current_question");
-        currentBlock.innerHTML = current + '';
-        counterBlock.innerHTML = qCount + '';
-        this.expandQuestion();
-
+        this._ui.UIHandler('task:change');
+        //this.expandQuestion();
     }
 
     changeField() {
         let current = this._current;
-        const infoBlock = document.querySelector("#question_info");
-        const answerBlock = document.querySelector('#answer');
         const questionBlock = document.querySelector("#letters");
         questionBlock.innerHTML = '';
         if (current === this._tasks.length) {
@@ -165,39 +139,24 @@ export default class Test {
             this._service.saveTestState(null);
             return null;
         }
-        current++;
+
+
+
+
+
+        const infoBlock = document.querySelector("#question_info");
+        const answerBlock = document.querySelector('#answer');
         infoBlock.innerHTML = '';
         answerBlock.innerHTML = '';
-        const currentBlock = document.querySelector("#current_question");
-        currentBlock.innerHTML = current + '';
+
+
+
+
+
         this.expandQuestion();
     }
 
-    tableGenerate() {
-
-        let field = document.querySelector('#letters');
-        let table = document.createElement('table');
-        table.className = 'table table-hover';
-        let thead = document.createElement('thead');
-        table.append(thead);
-        let tr = document.createElement('tr');
-        thead.append(tr);
-        let tbody = document.createElement('tbody');
-        table.append(tbody);
-        tr.innerHTML = '<th scope="col">#</th><th scope="col">Время выполнения задания</th><th scope="col">Допущено ошибок</th>';
-        this._json.forEach((task, i) => {
-            this._mistakes[i] = this._mistakes[i] ? this._mistakes[i] : 0;
-            let tr = document.createElement('tr');
-            tr.innerHTML = `<th scope="row">${i + 1} (${ this._json[i].question })</th><td>${this._time[i]} сек.</td><th>${this._mistakes[i]}</th>`;
-            tbody.append(tr);
-        });
-
-        field.append(table);
-        return null;
-    }
-
     expandQuestion() {
-        this._ui.UIHandler('task:change');
         const infoBlock = document.querySelector("#question_info");
         infoBlock.innerHTML = this.task.info;
         const questionBlock = document.querySelector("#letters");
@@ -205,8 +164,8 @@ export default class Test {
         const self = this;
         switch (this.task._type) {
             case'word': {
-                if (this._taskProgress > 0) {
-                    for (let i = 0; i < this._taskProgress; i++) {
+                if (this.taskProgress > 0) {
+                    for (let i = 0; i < this.taskProgress; i++) {
                         let button = document.createElement('button');
                         let letter = this.task._answer[i];
                         button.className = 'btn btn-success elem';
@@ -241,11 +200,36 @@ export default class Test {
                         });
                     button.innerHTML = letter;
                 });
+
+
+
+
                 break;
             }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             case'phrase': {
-                if (this._taskProgress > 0) {
-                    for (let i = 0; i < this._taskProgress; i++) {
+
+
+
+
+                if (this.taskProgress > 0) {
+                    for (let i = 0; i < this.taskProgress; i++) {
                         let button = document.createElement('button');
                         let word = this.task._answer[i];
                         button.className = 'btn btn-success elem';
@@ -281,6 +265,13 @@ export default class Test {
                         }
                     });
                 });
+
+
+
+
+
+
+
                 break;
             }
             case'translate': {
@@ -329,6 +320,42 @@ export default class Test {
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    tableGenerate() {
+
+        let field = document.querySelector('#letters');
+        let table = document.createElement('table');
+        table.className = 'table table-hover';
+        let thead = document.createElement('thead');
+        table.append(thead);
+        let tr = document.createElement('tr');
+        thead.append(tr);
+        let tbody = document.createElement('tbody');
+        table.append(tbody);
+        tr.innerHTML = '<th scope="col">#</th><th scope="col">Время выполнения задания</th><th scope="col">Допущено ошибок</th>';
+        this._json.forEach((task, i) => {
+            this._mistakes[i] = this._mistakes[i] ? this._mistakes[i] : 0;
+            let tr = document.createElement('tr');
+            tr.innerHTML = `<th scope="row">${i + 1} (${ this._json[i].question })</th><td>${this._time[i]} сек.</td><th>${this._mistakes[i]}</th>`;
+            tbody.append(tr);
+        });
+
+        field.append(table);
+        return null;
+    }
+
     get task() {
         if (this._current >= 0) {
             return this._tasks[this._current];
@@ -340,6 +367,13 @@ export default class Test {
         return this._status === 'ready';
     }
 
+    get state() {
+        return {
+            current: this._current,
+            total: this._tasks.length,
+        }
+    }
+
     get isSaved() {
         return this._status === 'saved';
     }
@@ -348,7 +382,7 @@ export default class Test {
 
         let data = {};
         data._json = this._json;
-        data._taskProgress = this._taskProgress;
+        data._taskProgress = this.taskProgress;
         data._current = this._current;
         data._mistakes = this._mistakes;
         data._time = this._time;
@@ -359,4 +393,22 @@ export default class Test {
     getData() {
         return this._service.getTestState();
     }
+
+    _startTimer() {
+        let time = 0;
+        this._time.forEach(task => {
+            time += task;
+        });
+        const tik = () => {
+            this.saveData();
+            this._ui.UIHandler('counter:tick', { time: time });
+        };
+        tik();
+        this._timer = setInterval(() => {
+            time += 1;
+            this._time[this._current] = this._time[this._current] ? this._time[this._current] + 1 : 1;
+            tik();
+        }, 1000);
+    }
+
 }
