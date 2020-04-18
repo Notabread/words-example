@@ -2,6 +2,11 @@ import TaskModule from "./TaskModule";
 
 export default class PhraseModule extends TaskModule {
 
+    /**
+     * Отрисовка задачи на сбор фразы по словам (возможно стоило сделать общий класс для типов задач "word" и "phrase")
+     *
+     * @private
+     */
     _render() {
         super._render();
         if (this._test.taskProgress > 0) {
@@ -20,13 +25,16 @@ export default class PhraseModule extends TaskModule {
             this.questionBlock.append(button);
             button.addEventListener('click', () => {
                 this._currentBtn = button;
-                this._test.inputHandler('answer:check', { answer: word });
+                this._test.inputHandler('answer:check', { answer: word }); //Отправляем запрос на проверку ответа
             });
         });
     }
 
+    /**
+     * Реакция на верно нажатое слово
+     *
+     */
     correct() {
-        //тут функция для скрытия верно нажатых кнопок и тд
         let button = this._currentBtn;
         button.style.display = 'none';
         let right = document.createElement('button');
@@ -35,6 +43,10 @@ export default class PhraseModule extends TaskModule {
         this.answerBlock.append(right);
     }
 
+    /**
+     * Реакция на неверно нажатое слово
+     *
+     */
     incorrect() {
         //тут мы подсвечиваем красным неправильно нажатые кнопки
         let button = this._currentBtn;

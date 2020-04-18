@@ -2,6 +2,12 @@ import TaskModule from "./TaskModule";
 
 export default class PopModule extends TaskModule {
 
+    /**
+     * Отрисовка технических сообщений о новом или незавершённом тесте
+     *
+     * @param isNew
+     * @private
+     */
     _render({ isNew = false }) {
         super._render();
         if (isNew) {
@@ -10,7 +16,7 @@ export default class PopModule extends TaskModule {
             const acceptBtn = document.querySelector('#ready_for_new');
             pop.style.display = 'block';
             acceptBtn.addEventListener('click', () => {
-                this._test.inputHandler('test:boot');
+                this._test.inputHandler('test:boot'); //Отправляем запрос на подготовку нового теста
             });
         } else {
             console.log('ui: Вывод сообщения о незаконченном тесте');
@@ -19,10 +25,10 @@ export default class PopModule extends TaskModule {
             const declineBtn = document.querySelector('#decline_continue');
             pop.style.display = 'block';
             acceptBtn.addEventListener('click', () => {
-                this._test.inputHandler('test:continue');
+                this._test.inputHandler('test:continue'); //Отправляем запрос на продолжение теста
             });
             declineBtn.addEventListener('click', () => {
-                this._test.inputHandler('test:new');
+                this._test.inputHandler('test:new'); //Отправляем запрос на подготовку нового теста
             });
         }
     }

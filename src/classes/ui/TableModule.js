@@ -2,6 +2,14 @@ import TaskModule from "./TaskModule";
 
 export default class TableModule extends TaskModule {
 
+    /**
+     * Отрисовка таблицы резултатов и вывод общей информации
+     *
+     * @param tasks
+     * @param mistakes
+     * @param timings
+     * @private
+     */
     _render( { results: { tasks, mistakes, timings } } ) {
 
         //Блок вывода общей информации

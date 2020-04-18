@@ -2,6 +2,11 @@ import TaskModule from "./TaskModule";
 
 export default class TranslateModule extends TaskModule {
 
+    /**
+     * Отрисовка задачи на перевод слова с другого языка
+     *
+     * @private
+     */
     _render() {
         super._render();
         this.questionBlock.innerHTML = this._test.task.question;
@@ -16,7 +21,7 @@ export default class TranslateModule extends TaskModule {
             e.preventDefault();
             let answer = input.value;
             this._currentBtn = button;
-            this._test.inputHandler('answer:check', { answer: answer });
+            this._test.inputHandler('answer:check', { answer: answer }); //Отправляем запрос на проверку ответа
         });
         div.className = 'form-group mb-2';
         label.className = 'sr-only';
@@ -33,10 +38,19 @@ export default class TranslateModule extends TaskModule {
         this.answerBlock.append(form);
     }
 
+    /**
+     * Рекция на верный перевод (ничего не делает, просто должен быть метод)
+     *
+     * @returns {number}
+     */
     correct() {
         return 0;
     }
 
+    /**
+     * Реакция на неверный ответ (подсвечивает кнопку красным цветом)
+     *
+     */
     incorrect() {
         let button = this._currentBtn;
         button.classList.add('btn-danger');
