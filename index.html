@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тренажер для слов</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <style>
+        .elem {
+            margin-right: 8px;
+        }
+        .field {
+            min-height: 150px;
+        }
+        .pop {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background-color: white;
+            z-index: 100;
+            padding: 0 200px 0 200px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="pop" id="new_test">
+    <br>
+    <div class="card card-default mb-4">
+        <div class="card-header">
+            Тренажер
+        </div>
+        <div class="card-body">
+            <p class="card-text">Готовы начать новый тест?</p>
+            <button id="ready_for_new" class="btn btn-primary">Начать</button>
+        </div>
+    </div>
+</div>
+
+<div class="pop" id="pop">
+    <br>
+    <div class="card card-default mb-4">
+        <div class="card-header">
+            Тренажер
+        </div>
+        <div class="card-body">
+            <p class="card-text">У вас есть назаконченный тест. Хотели бы вы его продолжить?</p>
+            <button id="accept_continue" class="btn btn-primary">Продолжить</button>
+            <button id="decline_continue" class="btn btn-danger">Начать сначала</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h1 class="mb-4">Тренажер для слов</h1>
+
+    <div class="card card-default mb-4 test-card">
+        <div class="card-body field">
+            <div id="info">Задача <span id="current_question">0</span> из <span id="total_questions">0</span>, время: <span id="timer">0</span> сек.</div>
+            <div class="lead mb-3" id="question_info">Задание</div>
+            <div id="answer">
+
+            </div>
+        </div>
+    </div>
+
+    <div id="letters">
+
+    </div>
+
+</div>
+
+<script src="dist/main.js"></script>
+</body>
+</html>
